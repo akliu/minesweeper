@@ -66,7 +66,6 @@ class Minesweeper
         if @board[row][col].nil?
           adjacent_coords = get_adjacent_coords([row,col])
           adjacent_bombs = calculate_adjacent_bombs(adjacent_coords)
-          p adjacent_bombs
           @board[row][col] = Tile.new(adjacent_bombs)
         end
       end
@@ -140,17 +139,19 @@ class Minesweeper
   end
 
   def won?
-    @board.flatten.each do |tile|
-      return false if tile.hidden && tile.value != 9
-    end
-    true
+    @board.flatten.none? {|tile| tile.hidden || tile.value == 9 }
+    # @board.flatten.each do |tile|
+    #   return false if tile.hidden && tile.value != 9
+    # end
+    # true
   end
 
   def lost?
-    @board.flatten.each do |tile|
-      return true if tile.value == 9 && !tile.hidden
-    end
-    false
+    @board.flatten.any? {|tile| tile.value == 9 && !tile.hidden}
+    # @board.flatten.each do |tile|
+    #   return true if tile.value == 9 && !tile.hidden
+    # end
+    # false
   end
 
   def over?
@@ -214,7 +215,7 @@ class Game
 end
 
 if __FILE__ == $PROGRAM_NAME
-  a = Minesweeper.new(4,1)
+  a = Minesweeper.new(4,0)
   game = Game.new(a)
   game.play
 end
