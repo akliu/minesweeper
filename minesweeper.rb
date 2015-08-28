@@ -142,7 +142,15 @@ class Minesweeper
   end
 
   def won?
-    @board.flatten.none? {|tile| tile.hidden || tile.value == 9 }
+    #@board.flatten.none? {|tile| tile.hidden || tile.value == 9 }
+    @board.flatten.none? {|tile| tile.value != 9 ? tile.hidden : !tile.flagged}
+    # @board.flatten.none? do |tile|
+    #   if tile.value != 9 #tile is not a bomb
+    #     tile.hidden #none should be hidden
+    #   else #tile is a bomb
+    #     !tile.flagged #none should be not flagged
+    #   end
+    # end
     # @board.flatten.each do |tile|
     #   return false if tile.hidden && tile.value != 9
     # end
@@ -164,30 +172,51 @@ end
 
 class Game
   attr_reader :board
-
+  
   def initialize(board)
     @board = board
+    @start_time = 0
   end
 
-  def play
-
-    until board.over?
-      system "clear"
-      @board.render
-      play_turn
-    end
+  def show_board
+    system "clear"
+    p elapsed_time
     @board.render
+  end
+
+  def display_message
     if board.won?
-      puts "You won!"
+      puts "You won in #{elapsed_time} seconds"
     elsif board.lost?
       puts "You lost!"
     end
+  end
 
+  def start_timer
+    @start_time = Time.now
+  end
+
+  def elapsed_time
+    Time.now - @start_time
+  end
+
+  def play
+    start_timer
+    until board.over?
+      show_board
+      play_turn
+    end
+    show_board
+    display_message
   end
 
   def play_turn
     #get an input
     row,col,type = get_move
+    if type == "s"
+      save_game
+      Kernel.abort("Goodbye!")
+    end
 
     until @board.in_boundary?([row,col])
       puts "Invalid coordinates, pleases choose again!"
@@ -198,9 +227,6 @@ class Game
       @board.guess_reveal([row,col])
     elsif type == "f"
       @board.toggle_flag([row,col])
-    elsif type == "s"
-      save_game
-      Kernel.abort("Goodbye!")
     end
   end
 
