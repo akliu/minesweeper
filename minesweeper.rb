@@ -1,3 +1,6 @@
+require 'YAML'
+#require 'File'
+
 class Tile
   attr_reader :hidden, :flagged
 
@@ -195,27 +198,41 @@ class Game
       @board.guess_reveal([row,col])
     elsif type == "f"
       @board.toggle_flag([row,col])
+    elsif type == "s"
+      save_game
+      Kernel.abort("Goodbye!")
     end
   end
 
   def get_move
-    puts "Please enter R for reveal or F for flag"
+    puts "Please enter R for reveal or F for flag or S for save game"
     type = gets.chomp.downcase
-    until type == "r" ||  type == "f"
+    until type == "r" ||  type == "f" || type == "s"
       puts "We did not understand your input."
-      puts "Please enter R for reveal or F for flag"
+      puts "Please enter R for reveal or F for flag or S for save game"
       type = gets.chomp.downcase
     end
     puts "Please choose a row"
     row = gets.chomp.to_i
     puts "Please choose a col"
     col = gets.chomp.to_i
-    [row,col,type]
+    [row, col, type]
+  end
+
+  def save_game
+    puts "Save file name"
+    file = gets.chomp
+    File.open(file, "w") { |f| f.puts self.to_yaml}
+    #Filename(file,self.to_yaml)
   end
 end
 
 if __FILE__ == $PROGRAM_NAME
-  a = Minesweeper.new(4,0)
-  game = Game.new(a)
-  game.play
+  if ARGV[0]
+    YAML.load_file(ARGV.shift).play
+  else
+    a = Minesweeper.new(4,1)
+    game = Game.new(a)
+    game.play
+  end
 end

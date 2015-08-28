@@ -1,0 +1,68 @@
+--- !ruby/object:Game
+board: !ruby/object:Minesweeper
+  size: 4
+  board:
+  - - !ruby/object:Tile
+      value: 0
+      hidden: true
+      flagged: false
+    - !ruby/object:Tile
+      value: 0
+      hidden: true
+      flagged: false
+    - !ruby/object:Tile
+      value: 0
+      hidden: true
+      flagged: false
+    - !ruby/object:Tile
+      value: 0
+      hidden: true
+      flagged: false
+  - - !ruby/object:Tile
+      value: 0
+      hidden: true
+      flagged: false
+    - !ruby/object:Tile
+      value: 0
+      hidden: true
+      flagged: false
+    - !ruby/object:Tile
+      value: 0
+      hidden: true
+      flagged: false
+    - !ruby/object:Tile
+      value: 0
+      hidden: true
+      flagged: false
+  - - !ruby/object:Tile
+      value: 0
+      hidden: true
+      flagged: false
+    - !ruby/object:Tile
+      value: 0
+      hidden: true
+      flagged: false
+    - !ruby/object:Tile
+      value: 0
+      hidden: true
+      flagged: false
+    - !ruby/object:Tile
+      value: 0
+      hidden: true
+      flagged: false
+  - - !ruby/object:Tile
+      value: 0
+      hidden: true
+      flagged: false
+    - !ruby/object:Tile
+      value: 0
+      hidden: true
+      flagged: false
+    - !ruby/object:Tile
+      value: 0
+      hidden: true
+      flagged: false
+    - !ruby/object:Tile
+      value: 0
+      hidden: true
+      flagged: false
