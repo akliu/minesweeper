@@ -15,6 +15,10 @@ class Tile
     @value
   end
 
+  def toggle_flag
+    @flagged = !@flagged
+  end
+
   def display_value
     if @hidden && @flagged
       "F"
@@ -39,7 +43,7 @@ class Minesweeper
     @board = Array.new(size) {Array.new(size)}
     seed_bombs(bomb_limit)
     populate_non_bombs
-    nil
+
   end
 
   def []=(pos, val)
@@ -66,6 +70,7 @@ class Minesweeper
         if @board[row][col].nil?
           adjacent_coords = get_adjacent_coords([row,col])
           adjacent_bombs = calculate_adjacent_bombs(adjacent_coords)
+          p adjacent_bombs
           @board[row][col] = Tile.new(adjacent_bombs)
         end
       end
@@ -77,13 +82,13 @@ class Minesweeper
     bomb_count = 0
     coords.each do |pos|
       row,col = pos
-      bomb_count += 1 if !@board[row][col].nil? && @board[row][col].to_s == 9
+      bomb_count += 1 if !@board[row][col].nil? && @board[row][col].value == 9
     end
     bomb_count
   end
 
   def in_boundary(pos)
-      pos.all? {|coord| (0..(@size -1)).include?(coord) }
+    pos.all? {|coord| (0..(@size -1)).include?(coord) }
   end
 
   def get_adjacent_coords(pos)
@@ -99,8 +104,11 @@ class Minesweeper
 
   def guess_reveal(pos)
     row,col = pos
-    if @board[row][col].value == 9
+    if @board[row][col].value == 9 && !@board[row][col].flagged
       @board[row][col].reveal
+    elsif @board[row][col].flagged
+      puts "This coordinate is flagged, please unflag first"
+      sleep(2)
     else
       recurse_reveal(pos)
     end
@@ -109,11 +117,9 @@ class Minesweeper
   def recurse_reveal(pos)
     row,col = pos
     current_pos  = @board[row][col]
-    current_pos.reveal unless current_pos.value == 9
+    current_pos.reveal unless current_pos.value == 9 || current_pos.flagged
     if current_pos.value == 0
       get_adjacent_coords(pos).each do |position|
-        p position
-        p @board[position[0]][position[1]].hidden
         recurse_reveal(position) if @board[position[0]][position[1]].hidden
       end
     end
@@ -128,29 +134,33 @@ class Minesweeper
 
   def render
     @board.each do |row|
-      p row.map {|tile| tile.display_value}
+      p row.map {|tile| " " +  tile.display_value + " "}.join
     end
     nil
   end
 
+  def toggle_flag(pos)
+    row,col = pos
+    curr_pos = @board[row][col]
+    curr_pos.toggle_flag if curr_pos.hidden
+  end
+
   def won?
-    @board.flatten.all? do |tile|
-      if tile.value == 9
-        return true if tile.flagged
-      else
-        return true if !tile.hidden
+    @board.flatten.each do |tile|
+      if tile.hidden && tile.value != 9
+        return false
       end
-      false
     end
+    true
   end
 
   def lost?
-    @board.flatten.any? do |tile|
+    @board.flatten.each do |tile|
       if tile.value == 9
         return true if !tile.hidden
       end
-      false
     end
+    false
   end
 
   def over?
@@ -161,23 +171,62 @@ end
 class Game
   attr_reader :board
 
-  def initialize(board, player)
+  def initialize(board)
     @board = board
-    @player = player
   end
 
   def play
 
     until board.over?
+      system "clear"
+      @board.render
       play_turn
+    end
+    @board.render
+    if board.won?
+      puts "You won!"
+    elsif board.lost?
+      puts "Your lost!"
     end
 
   end
 
   def play_turn
     #get an input
+    row,col,type = get_move
 
+    until @board.in_boundary([row,col])
+      puts "Invalid coordinates, pleases choose again!"
+      row,col,type = get_move
+    end
     #execute input
-
+    if type == "r"
+      @board.guess_reveal([row,col])
+    elsif type == "f"
+      @board.toggle_flag([row,col])
+    end
   end
+
+  def get_move
+    puts "Please enter R for reveal or F for flag"
+    type = gets.chomp.downcase
+    until type == "r" ||  type == "f"
+      puts "We did not understand your input."
+      puts "Please enter R for reveal or F for flag"
+      type = gets.chomp.downcase
+    end
+    puts "Please choose a row"
+    row = gets.chomp.to_i
+    puts "Please choose a col"
+    col = gets.chomp.to_i
+    [row,col,type]
+  end
+end
+
+if __FILE__ == $PROGRAM_NAME
+  a = Minesweeper.new(4,1)
+  a.debug_render
+  sleep(5)
+  game = Game.new(a)
+  game.play
 end
