@@ -15,7 +15,7 @@ class Tile
     @value
   end
 
-  def toggle_flag
+  def toggle_tile
     @flagged = !@flagged
   end
 
@@ -23,7 +23,7 @@ class Tile
     if @hidden && @flagged
       "F"
     elsif @hidden
-      "|_|"
+      "_"
     else
       if @value == 9
         "*"
@@ -46,10 +46,6 @@ class Minesweeper
 
   end
 
-  def []=(pos, val)
-    row,col = pos
-    @board[row][col] = val
-  end
 
   def seed_bombs(bomb_limit)
     bomb = 0
@@ -87,7 +83,7 @@ class Minesweeper
     bomb_count
   end
 
-  def in_boundary(pos)
+  def in_boundary?(pos)
     pos.all? {|coord| (0..(@size -1)).include?(coord) }
   end
 
@@ -99,7 +95,7 @@ class Minesweeper
                                                                     col == 0
       end
     end
-    adjacent_coords.select {|pos| in_boundary(pos)}
+    adjacent_coords.select {|pos| in_boundary?(pos)}
   end
 
   def guess_reveal(pos)
@@ -129,36 +125,30 @@ class Minesweeper
     @board.each do |row|
       p row.map {|tile| tile.value}
     end
-    nil
   end
 
   def render
     @board.each do |row|
       p row.map {|tile| " " +  tile.display_value + " "}.join
     end
-    nil
   end
 
   def toggle_flag(pos)
     row,col = pos
     curr_pos = @board[row][col]
-    curr_pos.toggle_flag if curr_pos.hidden
+    curr_pos.toggle_tile if curr_pos.hidden
   end
 
   def won?
     @board.flatten.each do |tile|
-      if tile.hidden && tile.value != 9
-        return false
-      end
+      return false if tile.hidden && tile.value != 9
     end
     true
   end
 
   def lost?
     @board.flatten.each do |tile|
-      if tile.value == 9
-        return true if !tile.hidden
-      end
+      return true if tile.value == 9 && !tile.hidden
     end
     false
   end
@@ -186,7 +176,7 @@ class Game
     if board.won?
       puts "You won!"
     elsif board.lost?
-      puts "Your lost!"
+      puts "You lost!"
     end
 
   end
@@ -195,7 +185,7 @@ class Game
     #get an input
     row,col,type = get_move
 
-    until @board.in_boundary([row,col])
+    until @board.in_boundary?([row,col])
       puts "Invalid coordinates, pleases choose again!"
       row,col,type = get_move
     end
@@ -225,8 +215,6 @@ end
 
 if __FILE__ == $PROGRAM_NAME
   a = Minesweeper.new(4,1)
-  a.debug_render
-  sleep(5)
   game = Game.new(a)
   game.play
 end
