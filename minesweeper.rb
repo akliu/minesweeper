@@ -40,15 +40,38 @@ class Tile
 end
 
 class Minesweeper
-
-  def initialize(size = 9, bomb_limit = 10)
-    @size = size
-    @board = Array.new(size) {Array.new(size)}
-    seed_bombs(bomb_limit)
+    attr_reader :bomb_limit, :size
+  def initialize
+    @size
+    @bomb_limit
+    @board = create_board_size
+    seed_bombs(@bomb_limit)
     populate_non_bombs
 
   end
 
+  def create_board_size
+    puts "Select difficulty (E, M, H)"
+    settings = ['e', 'm', 'h']
+    difficulty = gets.strip.downcase
+    until settings.include?(difficulty)
+      puts "We did not understand your input."
+      puts "Select difficulty (E, M, H)"
+      difficulty = gets.strip.downcase
+    end
+    case difficulty
+    when "e"
+      @size = 9
+      @bomb_limit = 10
+    when "m"
+      @size = 16
+      @bomb_limit = 40
+    when "h"
+      @size = 20
+      @bomb_limit = 80
+    end
+    Array.new(size) {Array.new(size)}
+  end
 
   def seed_bombs(bomb_limit)
     bomb = 0
@@ -172,7 +195,8 @@ end
 
 class Game
   attr_reader :board
-  
+  @@top_ten_score_board = Array.new(3) {Array.new}
+
   def initialize(board)
     @board = board
     @start_time = 0
@@ -187,6 +211,7 @@ class Game
   def display_message
     if board.won?
       puts "You won in #{elapsed_time} seconds"
+      p top_score_control
     elsif board.lost?
       puts "You lost!"
     end
@@ -209,6 +234,28 @@ class Game
     show_board
     display_message
   end
+
+
+
+  def top_score_control
+    total_time = elapsed_time
+    puts "Please enter name"
+    name = gets.strip.capitalize
+    difficulty = @board.size
+    case difficulty
+    when difficulty == 9
+      @@top_ten_score_board[0].push([total_time => name])
+      @@top_ten_score_board[0].sort! {|a,b| a[0] <=> b[0] }
+    when difficulty == 16
+      @@top_ten_score_board[1].push([total_time => name])
+      @@top_ten_score_board[1].sort! {|a,b| a[0] <=> b[0] }
+    when difficulty == 20
+      @@top_ten_score_board[2].push([total_time => name])
+      @@top_ten_score_board[2].sort! {|a,b| a[0] <=> b[0] }
+
+    end
+  end
+
 
   def play_turn
     #get an input
@@ -257,7 +304,7 @@ if __FILE__ == $PROGRAM_NAME
   if ARGV[0]
     YAML.load_file(ARGV.shift).play
   else
-    a = Minesweeper.new(4,1)
+    a = Minesweeper.new
     game = Game.new(a)
     game.play
   end
